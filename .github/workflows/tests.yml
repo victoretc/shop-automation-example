@@ -18,11 +18,11 @@ jobs:
         run: poetry install
       - name: Run lint check
         run: poetry run pre-commit run --all-files
-      - name: Install playwright 
+      - name: Install playwright
         run: poetry run playwright install chromium --with-deps
       - name: Run tests
         run: poetry run pytest
-      
+
       - name: get allure history
         uses: actions/checkout@v4
         if: always()
@@ -38,10 +38,9 @@ jobs:
           allure_history: allure-history
           keep_reports: 20
 
-      - name: publish allure 
+      - name: publish allure
         if: always()
-        uses: peaceiris/actions-gh-pages@v2
-        env:
-          PERSONAL_TOKEN: ${{ secrets.MY_TOKEN }}
-          PUBLISH_BRANCH: gh-pages
-          PUBLISH_DIR: allure-history
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
