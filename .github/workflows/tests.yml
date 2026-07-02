@@ -6,7 +6,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install poetry
         run: pipx install poetry
       - name: Set up Python
@@ -24,7 +24,7 @@ jobs:
         run: poetry run pytest
 
       - name: get allure history
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         if: always()
         with:
           ref: gh-pages
