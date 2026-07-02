@@ -1,0 +1,1 @@
+INFO     fixtures.add_console_to_allure_fixtures:add_console_to_allure_fixtures.py:26 capture_console: accessing browser.page for test tests/test_search.py::test_search[chromium]

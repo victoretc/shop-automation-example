@@ -1,0 +1,3 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","34319","test_search[chromium]","tests","2026-07-02","broken","2026-07-02","","test_catalog","",""
+"","5546","test_search[chromium]","tests","2026-07-02","passed","2026-07-02","","test_search","",""
