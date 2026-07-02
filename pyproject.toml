@@ -1,0 +1,34 @@
+[project]
+name = "shop-automation-example"
+readme = "README.md"
+requires-python = ">=3.12,<4.0"
+dependencies = [
+    "ruff (>=0.15.4,<0.16.0)",
+    "pre-commit (>=4.5.1,<5.0.0)",
+    "allure-pytest (>=2.16.0,<3.0.0)",
+    "pydantic[email] (>=2.13.4,<3.0.0)",
+    "pytest-xdist (>=3.8.0,<4.0.0)",
+    "pytest-repeat (>=0.9.4,<0.10.0)",
+    "jinja2 (>=3.1.6,<4.0.0)",
+    "mimesis (>=19.1.0,<20.0.0)",
+    "psutil (>=7.2.2,<8.0.0)",
+    "structlog (>=26.1.0,<27.0.0)",
+    "curlify2 (>=2.0.0,<3.0.0)",
+    "pydantic-settings (>=2.14.2,<3.0.0)",
+    "pytest-playwright (>=0.7.2,<0.8.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
+
+[tool.pytest.ini_options]
+addopts = "-s -vv --alluredir=allure-results --video on --log-cli-level=INFO --screenshot on --tracing on"
+markers = [
+    "smoke: important",
+    "regression: also important but longer"
+]

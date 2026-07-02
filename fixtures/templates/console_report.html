@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console Report</title>
+    
+    {% include 'base.html' %}
+
+    <style>
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .stat-value.log { color: var(--text-primary); }
+        .stat-value.error { color: var(--error); }
+        .stat-value.warning { color: var(--warning); }
+        .stat-value.info { color: var(--info); }
+        .stat-value.debug { color: var(--debug); }
+
+        .logs-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .logs-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: #f1f5f9;
+        }
+
+        .logs-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .logs-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .log-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .log-item:last-child {
+            border-bottom: none;
+        }
+
+        .log-type {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .log-type.log { 
+            background: #f1f5f9;
+            color: var(--text-primary);
+        }
+        .log-type.error { 
+            background: #fee2e2;
+            color: var(--error);
+        }
+        .log-type.warning { 
+            background: #fef3c7;
+            color: var(--warning);
+        }
+        .log-type.info { 
+            background: #dbeafe;
+            color: var(--info);
+        }
+        .log-type.debug { 
+            background: #f3e8ff;
+            color: var(--debug);
+        }
+
+        .log-content {
+            flex: 1;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            word-break: break-all;
+        }
+
+        .timestamp {
+            color: var(--text-secondary);
+            font-size: 12px;
+            min-width: 120px;
+            text-align: right;
+        }
+
+        .empty-state {
+            padding: 48px 20px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-button {
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-button:hover {
+            background: #f1f5f9;
+        }
+
+        .filter-button.active {
+            background: var(--text-primary);
+            color: white;
+            border-color: var(--text-primary);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+            
+            .stat-card {
+                padding: 16px;
+            }
+            
+            .stat-value {
+                font-size: 24px;
+            }
+            
+            .log-item {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .timestamp {
+                text-align: left;
+                align-self: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Console Report</h1>
+            <div class="subtitle">Generated: {{ generation_time }}</div>
+        </div>
+
+        <div class="stats">
+            {% set counts = {'log': 0, 'error': 0, 'warning': 0, 'info': 0, 'debug': 0} %}
+            {% for log in logs %}
+                {% if log.type and log.type|lower in counts %}
+                    {% set type_lower = log.type|lower %}
+                    {% set _ = counts.update({type_lower: counts[type_lower] + 1}) %}
+                {% endif %}
+            {% endfor %}
+            
+            <div class="stat-card">
+                <div class="stat-title">Log Messages</div>
+                <div class="stat-value log">{{ counts.log }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">Errors</div>
+                <div class="stat-value error">{{ counts.error }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">Warnings</div>
+                <div class="stat-value warning">{{ counts.warning }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">Info Messages</div>
+                <div class="stat-value info">{{ counts.info }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">Debug Messages</div>
+                <div class="stat-value debug">{{ counts.debug }}</div>
+            </div>
+        </div>
+
+        <div class="logs-container">
+            <div class="logs-header">
+                <div class="logs-title">Console Messages</div>
+                <div class="filter-buttons">
+                    <button class="filter-button active" data-filter="all">All ({{ logs|length }})</button>
+                    <button class="filter-button" data-filter="error">Errors ({{ counts.error }})</button>
+                    <button class="filter-button" data-filter="warning">Warnings ({{ counts.warning }})</button>
+                    <button class="filter-button" data-filter="info">Info ({{ counts.info }})</button>
+                    <button class="filter-button" data-filter="log">Logs ({{ counts.log }})</button>
+                    <button class="filter-button" data-filter="debug">Debug ({{ counts.debug }})</button>
+                </div>
+            </div>
+            
+            <div class="logs-list">
+                {% if logs %}
+                    {% for log in logs %}
+                        <div class="log-item" data-type="{{ log.type|lower if log.type else 'unknown' }}">
+                            <div class="log-type {{ log.type|lower if log.type else 'unknown' }}">
+                                {{ log.type if log.type else 'UNKNOWN' }}
+                            </div>
+                            <div class="log-content">
+                                <div class="log-text">{{ log.text if log.text else 'No message content' }}</div>
+                                
+                                {% if log.location and log.location.url %}
+                                <div class="log-location">
+                                    <strong>Location:</strong> {{ log.location.url }}
+                                    {% if log.location.line_number %}
+                                        :{{ log.location.line_number }}
+                                        {% if log.location.column_number %}
+                                            :{{ log.location.column_number }}
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                
+                                {% if log.page and log.page.url %}
+                                <div class="log-page">
+                                    <strong>Page:</strong> {{ log.page.url }}
+                                </div>
+                                {% endif %}
+                                
+                                {% if log.args and log.args|length > 0 %}
+                                <div class="log-args">
+                                    <strong>Arguments:</strong> {{ log.args|length }} argument(s)
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        No console messages were captured during test execution.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterButtons = document.querySelectorAll('.filter-button');
+            const logItems = document.querySelectorAll('.log-item');
+            
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const filter = this.getAttribute('data-filter');
+                    
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    logItems.forEach(item => {
+                        if (filter === 'all') {
+                            item.style.display = 'flex';
+                        } else {
+                            const type = item.getAttribute('data-type');
+                            item.style.display = type === filter ? 'flex' : 'none';
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
