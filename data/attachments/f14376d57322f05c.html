@@ -1,0 +1,3246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Report</title>
+    
+    <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.5;
+    padding: 24px;
+}
+
+:root {
+    --bg-primary: #f8fafc;
+    --bg-secondary: #ffffff;
+    --border-color: #e2e8f0;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+    --debug: #8b5cf6;
+    --radius: 8px;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --method-get: #10b981;
+    --method-post: #3b82f6;
+    --method-put: #f59e0b;
+    --method-delete: #ef4444;
+    --method-patch: #8b5cf6;
+    --method-options: #64748b;
+    --method-head: #f97316;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.header {
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+
+</style>
+
+    <style>
+        .search-container {
+            margin-bottom: 24px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 14px;
+            background: var(--bg-secondary);
+            box-shadow: var(--shadow);
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--info);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .filters-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 16px 20px;
+            margin-bottom: 24px;
+        }
+
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .filter-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .filter-button {
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .filter-button:hover {
+            background: #f1f5f9;
+        }
+
+        .filter-button.active {
+            background: var(--text-primary);
+            color: white;
+            border-color: var(--text-primary);
+        }
+
+        .filter-button.success {
+            color: var(--success);
+            border-color: var(--success);
+        }
+
+        .filter-button.error {
+            color: var(--error);
+            border-color: var(--error);
+        }
+
+        .filter-button.success.active {
+            background: var(--success);
+            color: white;
+        }
+
+        .filter-button.error.active {
+            background: var(--error);
+            color: white;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .stat-value.total { color: var(--text-primary); }
+        .stat-value.success { color: var(--success); }
+        .stat-value.error { color: var(--error); }
+        .stat-value.pending { color: var(--warning); }
+
+        .requests-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .requests-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .requests-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .requests-list {
+            max-height: 700px;
+            overflow-y: auto;
+        }
+
+        .request-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .request-item:hover {
+            background-color: #f8fafc;
+        }
+
+        .request-item.expanded {
+            background-color: #f8fafc;
+        }
+
+        .request-item:last-child {
+            border-bottom: none;
+        }
+
+        .request-summary {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .request-method {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 4px 8px;
+            border-radius: 4px;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .method-get { background: #d1fae5; color: var(--method-get); }
+        .method-post { background: #dbeafe; color: var(--method-post); }
+        .method-put { background: #fef3c7; color: var(--method-put); }
+        .method-delete { background: #fee2e2; color: var(--method-delete); }
+        .method-patch { background: #f3e8ff; color: var(--method-patch); }
+        .method-options { background: #f1f5f9; color: var(--method-options); }
+        .method-head { background: #ffedd5; color: var(--method-head); }
+
+        .request-url {
+            flex: 1;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            word-break: break-all;
+        }
+
+        .request-status {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .status-success { 
+            background: #d1fae5;
+            color: var(--success);
+        }
+        .status-error { 
+            background: #fee2e2;
+            color: var(--error);
+        }
+        .status-pending { 
+            background: #fef3c7;
+            color: var(--warning);
+        }
+
+        .request-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .request-info-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .request-details {
+            margin-top: 12px;
+            padding: 16px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            display: none;
+        }
+
+        .request-details.expanded {
+            display: block;
+        }
+
+        .details-section {
+            margin-bottom: 16px;
+        }
+
+        .details-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .details-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .details-content {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .empty-state {
+            padding: 48px 20px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .resource-type {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 3px 6px;
+            border-radius: 3px;
+            background: #e2e8f0;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+            
+            .stat-card {
+                padding: 16px;
+            }
+            
+            .stat-value {
+                font-size: 24px;
+            }
+            
+            .request-summary {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .request-info {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+            
+            .requests-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            
+            .filter-row {
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Network Report</h1>
+            <div class="subtitle">Generated: 2026-07-31 05:06:47</div>
+        </div>
+
+        <div class="search-container">
+            <input type="text" class="search-box" id="searchInput" placeholder="Search requests by URL, method, status, or resource type...">
+        </div>
+
+        <div class="filters-container">
+            <div class="filter-row">
+                <button class="filter-button active" data-filter="type-all">All</button>
+                <button class="filter-button" data-filter="type-document">Document</button>
+                <button class="filter-button" data-filter="type-stylesheet">CSS</button>
+                <button class="filter-button" data-filter="type-image">Image</button>
+                <button class="filter-button" data-filter="type-media">Media</button>
+                <button class="filter-button" data-filter="type-font">Font</button>
+                <button class="filter-button" data-filter="type-script">JS</button>
+                <button class="filter-button" data-filter="type-texttrack">TextTrack</button>
+                <button class="filter-button" data-filter="type-xhr">XHR</button>
+                <button class="filter-button" data-filter="type-fetch">Fetch</button>
+                <button class="filter-button" data-filter="type-eventsource">EventSource</button>
+                <button class="filter-button" data-filter="type-websocket">WebSocket</button>
+                <button class="filter-button" data-filter="type-manifest">Manifest</button>
+                <button class="filter-button" data-filter="type-other">Other</button>
+            </div>
+            <div class="filter-row">
+                <button class="filter-button active" data-filter="status-all">All</button>
+                <button class="filter-button success" data-filter="status-success">Success</button>
+                <button class="filter-button error" data-filter="status-error">Errors</button>
+            </div>
+        </div>
+
+        
+        
+        
+        
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-title">Total Requests</div>
+                <div class="stat-value total">72</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">Success</div>
+                <div class="stat-value success">72</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">Errors</div>
+                <div class="stat-value error">0</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">Pending/Failed</div>
+                <div class="stat-value pending">0</div>
+            </div>
+        </div>
+
+        <div class="requests-container">
+            <div class="requests-list" id="requestsList">
+                
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="document"
+             data-url="https://carvilleshop.ru/">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-1">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="document"
+             data-url="https://carvilleshop.ru/">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/</div>
+                <div class="request-status status-success">
+                    302
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-2">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="document"
+             data-url="https://carvilleshop.ru/">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-3">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="stylesheet"
+             data-url="https://carvilleshop.ru/local/templates/shop/assets/nouislider.css?v=">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/local/templates/shop/assets/nouislider.css?v=</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-4">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="stylesheet"
+             data-url="https://carvilleshop.ru/bitrix/cache/css/s2/shop/page_6a86467b400c5fc2f8241d3621b8a3e7/page_6a86467b400c5fc2f8241d3621b8a3e7_v1.css?17828199712068">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/bitrix/cache/css/s2/shop/page_6a86467b400c5fc2f8241d3621b8a3e7/page_6a86467b400c5fc2f8241d3621b8a3e7_v1.css?17828199712068</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-5">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="stylesheet"
+             data-url="https://carvilleshop.ru/bitrix/cache/css/s2/shop/template_c5299c43955d9a8ce794b4555006fc43/template_c5299c43955d9a8ce794b4555006fc43_v1.css?1784184804637196">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/bitrix/cache/css/s2/shop/template_c5299c43955d9a8ce794b4555006fc43/template_c5299c43955d9a8ce794b4555006fc43_v1.css?1784184804637196</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-6">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://carvilleshop.ru/local/templates/shop/assets/bundles/main-bundle.js?v=1783329783">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/local/templates/shop/assets/bundles/main-bundle.js?v=1783329783</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-7">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://carvilleshop.ru/bitrix/js/main/core/core.js?1774871743543783">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/bitrix/js/main/core/core.js?1774871743543783</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-8">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://carvilleshop.ru/bitrix/js/pull/protobuf/protobuf.js?1754379771274055">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/bitrix/js/pull/protobuf/protobuf.js?1754379771274055</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-9">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://carvilleshop.ru/bitrix/js/pull/protobuf/model.js?175437977170928">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/bitrix/js/pull/protobuf/model.js?175437977170928</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-10">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://carvilleshop.ru/bitrix/js/main/core/core_promise.js?17748717275221">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/bitrix/js/main/core/core_promise.js?17748717275221</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-11">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://carvilleshop.ru/local/templates/shop/js/common.js?v=1784277337">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/local/templates/shop/js/common.js?v=1784277337</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-12">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://carvilleshop.ru/bitrix/js/rest/client/rest.client.js?175437977317414">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/bitrix/js/rest/client/rest.client.js?175437977317414</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-13">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://carvilleshop.ru/local/templates/shop/js/backend.js?v=1773661754">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/local/templates/shop/js/backend.js?v=1773661754</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-14">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://carvilleshop.ru/bitrix/cache/js/s2/shop/page_c0d6719c7b020305e20a16627cff3d39/page_c0d6719c7b020305e20a16627cff3d39_v1.js?178281997124922">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/bitrix/cache/js/s2/shop/page_c0d6719c7b020305e20a16627cff3d39/page_c0d6719c7b020305e20a16627cff3d39_v1.js?178281997124922</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-15">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://carvilleshop.ru/bitrix/js/pull/client/pull.client.js?175437977183861">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/bitrix/js/pull/client/pull.client.js?175437977183861</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-16">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://carvilleshop.ru/bitrix/cache/js/s2/shop/template_3b185740feb8beb2394a0f08e783d4e9/template_3b185740feb8beb2394a0f08e783d4e9_v1.js?1784185252104591">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/bitrix/cache/js/s2/shop/template_3b185740feb8beb2394a0f08e783d4e9/template_3b185740feb8beb2394a0f08e783d4e9_v1.js?1784185252104591</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-17">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://www.clarity.ms/tag/xqb548dkqh">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://www.clarity.ms/tag/xqb548dkqh</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-18">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://carvilleshop.ru/pwa/js/pwa-push.js">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/pwa/js/pwa-push.js</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-19">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://scripts.clarity.ms/0.8.67/clarity.js">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://scripts.clarity.ms/0.8.67/clarity.js</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-20">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="post"
+             data-status="success"
+             data-type="xhr"
+             data-url="https://j.clarity.ms/collect">
+            <div class="request-summary">
+                <div class="request-method method-post">POST</div>
+                <div class="request-url">https://j.clarity.ms/collect</div>
+                <div class="request-status status-success">
+                    204
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-21">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://vk.com/js/api/videoplayer.js">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://vk.com/js/api/videoplayer.js</div>
+                <div class="request-status status-success">
+                    302
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-22">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://cloud.roistat.com/api/site/1.0/9a8ed5468295a513a913d7894dfbb499/init?referrer=https%3a%2f%2fcarvilleshop.ru%2f">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://cloud.roistat.com/api/site/1.0/9a8ed5468295a513a913d7894dfbb499/init?referrer=https%3A%2F%2Fcarvilleshop.ru%2F</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-23">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://vk.com/dist/public/api/videoplayer.d50210d2bf68b13264f1e9f0f810bb88.js">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://vk.com/dist/public/api/videoplayer.d50210d2bf68b13264f1e9f0f810bb88.js</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-24">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="post"
+             data-status="success"
+             data-type="fetch"
+             data-url="https://carvilleshop.ru/local/services/ajax/catalog_buy_state.php">
+            <div class="request-summary">
+                <div class="request-method method-post">POST</div>
+                <div class="request-url">https://carvilleshop.ru/local/services/ajax/catalog_buy_state.php</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-25">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://abt.s3.yandex.net/expjs/latest/exp.js">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://abt.s3.yandex.net/expjs/latest/exp.js</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-26">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://vk.com/js/api/openapi.js?169">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://vk.com/js/api/openapi.js?169</div>
+                <div class="request-status status-success">
+                    302
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-27">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="fetch"
+             data-url="https://carvilleshop.ru/local/services/ajax/ajax_block.php?template=null&type=video&count=10&skipid=0&showids=&pagertemplate=">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/local/services/ajax/ajax_block.php?template=null&type=video&count=10&skipId=0&showIds=&pagerTemplate=</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-28">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://mc.yandex.ru/metrika/tag.js">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://mc.yandex.ru/metrika/tag.js</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-29">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://top-fwz1.mail.ru/js/code.js">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://top-fwz1.mail.ru/js/code.js</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-30">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://vk.com/dist/public/api/openapi.0872b5cf548850a00f9eb9dac3a9a0a4.js?169">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://vk.com/dist/public/api/openapi.0872b5cf548850a00f9eb9dac3a9a0a4.js?169</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-31">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="fetch"
+             data-url="https://carvilleshop.ru/local/services/ajax/ajax_block.php?template=recommend_index&type=recommended&count=10&skipid=0&showids=&pagertemplate=">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/local/services/ajax/ajax_block.php?template=recommend_index&type=recommended&count=10&skipId=0&showIds=&pagerTemplate=</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-32">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="post"
+             data-status="success"
+             data-type="fetch"
+             data-url="https://carvilleshop.ru/local/services/ajax/new_goods_index_ajax.php">
+            <div class="request-summary">
+                <div class="request-method method-post">POST</div>
+                <div class="request-url">https://carvilleshop.ru/local/services/ajax/new_goods_index_ajax.php</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-33">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="fetch"
+             data-url="https://carvilleshop.ru/local/services/ajax/update_icons.php">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/local/services/ajax/update_icons.php</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-34">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="image"
+             data-url="https://top-fwz1.mail.ru/counter?_=0.4549840305080286;id=3781043;u=https%3a%2f%2fcarvilleshop.ru%2f;r=https%3a%2f%2fcarvilleshop.ru%2f;title=%d0%9a%d0%b0%d1%80%d0%b2%d0%b8%d0%bb%d1%8c%d1%88%d0%be%d0%bf%20-%20%d0%b8%d0%bd%d1%82%d0%b5%d1%80%d0%bd%d0%b5%d1%82-%d0%bc%d0%b0%d0%b3%d0%b0%d0%b7%d0%b8%d0%bd%20%d0%b0%d0%b2%d1%82%d0%be%d0%b7%d0%b0%d0%bf%d1%87%d0%b0%d1%81%d1%82%d0%b5%d0%b9%20%d0%b8%20%d0%b0%d0%b2%d1%82%d0%be%d0%b0%d0%ba%d1%81%d0%b5%d1%81%d1%81%d1%83%d0%b0%d1%80%d0%be%d0%b2;s=1920*1080;vp=1920*1080;touch=0;hds=1;sid=893c9dab0173ee0c;ver=60.6.0;tz=0%2futc;st=1785463599153;ct=5309/5369/5369//3771;gl=u;ni=10//4g/0/0/;lvid=1785463600665%3a1785463600717%3a1%3afc555c4507ff73bfbd38529218862baf;opts=jst-vk%2cwda;visible=true;js=13">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://top-fwz1.mail.ru/counter?_=0.4549840305080286;id=3781043;u=https%3A%2F%2Fcarvilleshop.ru%2F;r=https%3A%2F%2Fcarvilleshop.ru%2F;title=%D0%9A%D0%B0%D1%80%D0%B2%D0%B8%D0%BB%D1%8C%D1%88%D0%BE%D0%BF%20-%20%D0%B8%D0%BD%D1%82%D0%B5%D1%80%D0%BD%D0%B5%D1%82-%D0%BC%D0%B0%D0%B3%D0%B0%D0%B7%D0%B8%D0%BD%20%D0%B0%D0%B2%D1%82%D0%BE%D0%B7%D0%B0%D0%BF%D1%87%D0%B0%D1%81%D1%82%D0%B5%D0%B9%20%D0%B8%20%D0%B0%D0%B2%D1%82%D0%BE%D0%B0%D0%BA%D1%81%D0%B5%D1%81%D1%81%D1%83%D0%B0%D1%80%D0%BE%D0%B2;s=1920*1080;vp=1920*1080;touch=0;hds=1;sid=893c9dab0173ee0c;ver=60.6.0;tz=0%2FUTC;st=1785463599153;ct=5309/5369/5369//3771;gl=u;ni=10//4g/0/0/;lvid=1785463600665%3A1785463600717%3A1%3Afc555c4507ff73bfbd38529218862baf;opts=jst-vk%2Cwda;visible=true;js=13</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-35">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="image"
+             data-url="https://vk.com/rtrg?p=vk-rtrg-1194441-1cqxq&metatag_url=https%3a%2f%2fcarvilleshop.ru%2f&metatag_title=%d0%9a%d0%b0%d1%80%d0%b2%d0%b8%d0%bb%d1%8c%d1%88%d0%be%d0%bf%20-%20%d0%b8%d0%bd%d1%82%d0%b5%d1%80%d0%bd%d0%b5%d1%82-%d0%bc%d0%b0%d0%b3%d0%b0%d0%b7%d0%b8%d0%bd%20%d0%b0%d0%b2%d1%82%d0%be%d0%b7%d0%b0%d0%bf%d1%87%d0%b0%d1%81%d1%82%d0%b5%d0%b9%20%d0%b8%20%d0%b0%d0%b2%d1%82%d0%be%d0%b0%d0%ba%d1%81%d0%b5%d1%81%d1%81%d1%83%d0%b0%d1%80%d0%be%d0%b2">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://vk.com/rtrg?p=VK-RTRG-1194441-1CQxQ&metatag_url=https%3A%2F%2Fcarvilleshop.ru%2F&metatag_title=%D0%9A%D0%B0%D1%80%D0%B2%D0%B8%D0%BB%D1%8C%D1%88%D0%BE%D0%BF%20-%20%D0%B8%D0%BD%D1%82%D0%B5%D1%80%D0%BD%D0%B5%D1%82-%D0%BC%D0%B0%D0%B3%D0%B0%D0%B7%D0%B8%D0%BD%20%D0%B0%D0%B2%D1%82%D0%BE%D0%B7%D0%B0%D0%BF%D1%87%D0%B0%D1%81%D1%82%D0%B5%D0%B9%20%D0%B8%20%D0%B0%D0%B2%D1%82%D0%BE%D0%B0%D0%BA%D1%81%D0%B5%D1%81%D1%81%D1%83%D0%B0%D1%80%D0%BE%D0%B2</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-36">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="image"
+             data-url="https://mc.yandex.com/sync_cookie_image_check?scid=e84e1cf6-84a2-507e-d1f6-c7ee9fc0abed&cid=28725196">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://mc.yandex.com/sync_cookie_image_check?scid=e84e1cf6-84a2-507e-d1f6-c7ee9fc0abed&cid=28725196</div>
+                <div class="request-status status-success">
+                    302
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-37">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="xhr"
+             data-url="https://uaas.yandex.ru/v1/exps/?client_id=metrika.28725196&url=https%3a%2f%2fcarvilleshop.ru%2f&i=&duid=&client_features=%7b%7d">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://uaas.yandex.ru/v1/exps/?client_id=metrika.28725196&url=https%3A%2F%2Fcarvilleshop.ru%2F&i=&duid=&client_features=%7B%7D</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-38">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="post"
+             data-status="success"
+             data-type="xhr"
+             data-url="https://j.clarity.ms/collect">
+            <div class="request-summary">
+                <div class="request-method method-post">POST</div>
+                <div class="request-url">https://j.clarity.ms/collect</div>
+                <div class="request-status status-success">
+                    204
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-39">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://top-fwz1.mail.ru/js/dyn-goal-config.js?ids=3781043">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://top-fwz1.mail.ru/js/dyn-goal-config.js?ids=3781043</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-40">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="image"
+             data-url="https://mc.yandex.ru/sync_cookie_image_start?cid=28725196&redirect_domain=mc.yandex.com&scid=e84e1cf6-84a2-507e-d1f6-c7ee9fc0abed&token=11107.n24htbieg49jyfmpyyhkzyaprmpans2vmwttplvijcrbpso_jnqlhfefsz7vn9ei.cgw4d_mfycb6x9ugnb7kqvpsw84%2c">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://mc.yandex.ru/sync_cookie_image_start?cid=28725196&redirect_domain=mc.yandex.com&scid=e84e1cf6-84a2-507e-d1f6-c7ee9fc0abed&token=11107.n24HtbIEg49jyfMpyYhKZyApRmPans2VMWttPLvIjCrBPSo_jNqLhfEFSz7vN9eI.CGw4D_MfYCb6X9Ugnb7kqvPSW84%2C</div>
+                <div class="request-status status-success">
+                    302
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-41">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="image"
+             data-url="https://mc.yandex.com/metrika/advert.gif?t=gdpr(14)ti(4)">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://mc.yandex.com/metrika/advert.gif?t=gdpr(14)ti(4)</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-42">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="image"
+             data-url="https://mc.yandex.com/sync_cookie_image_decide?cid=28725196&scid=e84e1cf6-84a2-507e-d1f6-c7ee9fc0abed&token=11107.0qnyr_83vlks2dv6zomnknqik8dccy1jwadfxznhexyw20pu7dhvc3tvhaaov89nqwsb9fegvxf8xt3-ydimjlvuq5-esxwa2awm1jka-do%2c.9y4hnxwgrdcwi_3vn_6ndek-0um%2c">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://mc.yandex.com/sync_cookie_image_decide?cid=28725196&scid=e84e1cf6-84a2-507e-d1f6-c7ee9fc0abed&token=11107.0qnyR_83vLks2dv6zOmNKNqIk8DCcY1JWADfxzNhEXYw20pu7dhVC3tVHaaoV89NQwsB9feGVXF8xT3-YdiMJLvUQ5-EsXWA2awm1jKa-Do%2C.9y4hnxWgrDCwi_3VN_6NDeK-0UM%2C</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-43">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="fetch"
+             data-url="https://carvilleshop.ru/local/services/ajax/update_icons.php">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/local/services/ajax/update_icons.php</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-44">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://cloud.roistat.com/api/site/1.0/9a8ed5468295a513a913d7894dfbb499/addvisit?v=428&marker=&visit=1350553&first_visit=1350553&guid=&phone_prefix=&phone_prefix_bind=&phone_scripts_bind=&referrer=&page=https%3a%2f%2fcarvilleshop.ru%2f&ab=&ab_variants=&hash=os%60%40c%40ecr%1b%13%5bi%1b%13%5drp%1a%1be~%7byens%1agnkygi%5d%5dfnk%1dcl%13lkgbbi%18blz~a%1fe~ymr%1b%13%5bn%7dllz%7f%1b%5cogfyhmofgas%1bf%40kfg%40kfg%40bsg~ofg%1acfg%40hgk%7d%1f%1boi%7fsgbm%1edf%12%18di%7fsey%7fsgol%5dimrf%7c%18%7ccy%18f%1a%60~%60md~g%19f%40g%18%60~c%5d%60~c%1ey%1ab%7f~%7f%5dfgagfg%40hyk%7d%5ef%60~c%5dx%18%7c%40k%18%12fg%40afg%40hcp%7dlahm%7cpi%1adeig%13%5epy%7fsx%40o%1aey%1e%5df%40i%1eg%40i_d~%7ffg%40h~s%7dpbigafgas%1bgpi_gps%1dcl%13lkmlpkl%12%13dm%7b%1fdno%1fd%7dpcem%7brgm%7b%18d%40a%19s%40g%19pmc%19e%7dgre~bcp~k%1dcl%13lhmbbi%18blz~nfdg%7f%5dg%40%7b%5de~o%19pnpae%7d%7cbspmppg%7b%1ae%7ddbd~isgm%7f%1aeshiy%7cxyy%7cbl%7f%1a%1blx%1b%7cl%7f%1bxly%7f%7b%13g%40%7b%5dg~ireshiy%7cxyy%7cbl%7f%1a%1blx%1aly%7b%7fnlr%1b%7c~x%7c%60ly%7f%7b%13p%7dlfd~s%5ddnopdms%1fd~s%1bgpkppngsgpnbg%18dggg%7f%18pno%1dcl%13%40hmdxz~lfpgg%5dd%18%7bfd%7f%7fs%60~%7clppm%19%60~%7clgi%7f%1bx~c%1agng%1dcl%13%40hbdxzrbderb%5b%60~%7clg~i%1ed~%7b%18gp%7f%1feng%1bds%7f%1bx~ofd%7f%7fr%60~%7clkc%1f%40hmlskrx%1ffg%1bp%60~%60ms%18%13yhm%7c%40nnymig%13zi%19xbnl%13%18krdznn%1argp%7f%5dd~%7fpeshsh%18fpnml%1ar%18pzidd%1ar%19pzi%18f%1az~opd~k%1bd~g%1dcb%60%5ckrd%1asrxlngfpkrxls%18%13%5ck%18ffr%18%7c%1eimfsp~%1arg%40k%1fd%40k%5deshsh%18fpnml%1ar%18fpr%18%1ffp%7dxlhmfpnm%7c_r%19%60fir%7cfi%19xpz~k%1dcb%60%5ckrd%1asrxlkrdli%18l%18p%7c%13asrxbr%18f_r%18d%5ch%18%5ezp~%1areshiy%7cxyy%7cbl%7f%1a%1bl~ol~%7cl%13%7dy%7cd%60%7cn%1apgy%1e%5dds%1esgnc%18%60~c%5dgn%7ffg%1ao%5ddc%7fp%7b~%7b%5deshlo%7d%1bln%7dfaz~o%19en%7f%1ad%40g%18gno%1bdpi%1be~i%1fg~i%1dcl%13%1fh%7c%13az~o%19en%7f%1ad%40g%18gno%1dcbx%5eif%13yngfaz%7dp%40d~%7f%1bsp%7b%1bgnngp%40ipsgpcpng%1ed~c%1fg%40o%1eensssglgesh%1ahr%60lhbpzplx~z~o%19en%7f%1ad%40g%18gnk%18d%40%7fcl%7b%17%17&screenwidth=1920&screenheight=1080&screenpixeldepth=24&screencolordepth=24&devicememory=16&hardwareconcurrency=4&language=en-us&platform=linux%20x86_64&osversion=">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://cloud.roistat.com/api/site/1.0/9a8ed5468295a513a913d7894dfbb499/addVisit?v=428&marker=&visit=1350553&first_visit=1350553&guid=&phone_prefix=&phone_prefix_bind=&phone_scripts_bind=&referrer=&page=https%3A%2F%2Fcarvilleshop.ru%2F&ab=&ab_variants=&hash=OS%60%40c%40ECr%1B%13%5BI%1B%13%5DrP%1A%1Be~%7BYens%1AgnkYgi%5D%5Dfnk%1Dcl%13LKGBBI%18BLz~A%1Fe~YMr%1B%13%5BN%7DlLz%7F%1B%5COGFYHmoFgAs%1Bf%40kFg%40kFg%40Bsg~oFg%1AcFg%40hgK%7D%1F%1BOi%7FSgbM%1EdF%12%18di%7FSey%7FSgol%5DImRF%7C%18%7CCy%18F%1A%60~%60md~g%19f%40g%18%60~c%5D%60~c%1Ey%1AB%7F~%7F%5DFgAgFg%40hYK%7D%5EF%60~c%5Dx%18%7C%40K%18%12Fg%40AFg%40hcp%7DlAHm%7CPI%1AdEIG%13%5Epy%7FSx%40o%1Aey%1E%5Df%40I%1Eg%40I_d~%7FFg%40h~s%7DpBIGAFgAs%1BgPI_gPs%1Dcl%13LKmlPKl%12%13dm%7B%1Fdno%1Fd%7DpCem%7BRgm%7B%18d%40A%19s%40g%19pmc%19e%7DgRe~BCp~k%1Dcl%13LHmBBI%18BLz~NFdG%7F%5Dg%40%7B%5De~o%19pnpAe%7D%7CBsPMPpG%7B%1Ae%7DdBd~ISgm%7F%1AeShiy%7Cxyy%7CBL%7F%1A%1BLx%1B%7Cl%7F%1BxLy%7F%7B%13g%40%7B%5Dg~IReShiy%7Cxyy%7CBL%7F%1A%1BLx%1Aly%7B%7FNlr%1B%7C~x%7C%60Ly%7F%7B%13p%7DlFd~s%5DdnoPdms%1Fd~s%1BgPkPpngSgPNBg%18dGgG%7F%18pno%1Dcl%13%40HmdXz~lFpGg%5Dd%18%7BFd%7F%7FS%60~%7ClpPM%19%60~%7Clgi%7F%1Bx~c%1Agng%1Dcl%13%40HbdXzrBDerB%5B%60~%7Clg~I%1Ed~%7B%18gP%7F%1Feng%1BdS%7F%1Bx~oFd%7F%7FR%60~%7ClKC%1F%40HmlSKrx%1FfG%1BP%60~%60ms%18%13YHm%7C%40NnYMIG%13ZI%19xBNl%13%18KrdZNn%1ARgP%7F%5Dd~%7FPeShSH%18FPNml%1Ar%18pZIDd%1Ar%19pZI%18F%1Az~oPd~k%1Bd~g%1Dcb%60%5CKrd%1AsrxLNGFPKrxLs%18%13%5CK%18FFr%18%7C%1EImFSp~%1ARg%40k%1Fd%40k%5DeShSH%18FPNml%1Ar%18FPr%18%1FFp%7DxLHmFPNm%7C_r%19%60FIr%7CFI%19xPz~k%1Dcb%60%5CKrd%1AsrxLKrdLI%18l%18p%7C%13AsrxBr%18F_r%18d%5CH%18%5EZp~%1AReShiy%7Cxyy%7CBL%7F%1A%1BL~ol~%7Cl%13%7Dy%7Cd%60%7Cn%1APgy%1E%5DdS%1ESgnc%18%60~c%5Dgn%7FFg%1Ao%5DdC%7FP%7B~%7B%5DeShLO%7D%1BLN%7DFAz~o%19en%7F%1Ad%40g%18gno%1BdPI%1Be~I%1Fg~I%1Dcl%13%1FH%7C%13Az~o%19en%7F%1Ad%40g%18gno%1Dcbx%5EIF%13YNGFAz%7Dp%40d~%7F%1BsP%7B%1BgnNGp%40IPsGpCpng%1Ed~c%1Fg%40o%1EensSsGlGeSh%1AHr%60LHbpZplx~z~o%19en%7F%1Ad%40g%18gnk%18d%40%7FCL%7B%17%17&screenWidth=1920&screenHeight=1080&screenPixelDepth=24&screenColorDepth=24&deviceMemory=16&hardwareConcurrency=4&language=en-US&platform=Linux%20x86_64&osVersion=</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-45">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="fetch"
+             data-url="https://mc.yandex.com/watch/28725196?wmode=7&page-url=https%3a%2f%2fcarvilleshop.ru%2f&charset=utf-8&uah=chu%0a%22headlesschrome%22%3bv%3d%22149%22%2c%22chromium%22%3bv%3d%22149%22%2c%22not)a%3bbrand%22%3bv%3d%2224%22%0acha%0ax86%0achb%0a64%0achf%0a149.0.7827.55%0achl%0a%22headlesschrome%22%3bv%3d%22149.0.7827.55%22%2c%22chromium%22%3bv%3d%22149.0.7827.55%22%2c%22not)a%3bbrand%22%3bv%3d%2224.0.0.0%22%0achm%0a%3f0%0achp%0alinux&browser-info=pv%3a1%3avf%3a2fcf9t0evwpka93vpr54j1ow8p4p23%3afu%3a1%3aen%3autf-8%3ala%3aen-us%3av%3a2600%3acn%3a1%3adp%3a0%3als%3a1096966063119%3ahid%3a87263998%3az%3a0%3ai%3a20260731020640%3aet%3a1785463601%3ac%3a1%3arn%3a61869514%3arqn%3a1%3au%3a1785463601577597917%3aw%3a1920x1080%3as%3a1920x1080x24%3ask%3a1%3afp%3a1784%3awv%3a2%3ads%3a0%2c0%2c747%2c290%2c147%2c146%2c1%2c2622%2c345%2c%2c%2c%2c4106%3aco%3a0%3ahdl%3a1%3antf%3a1%3ans%3a1785463595345%3aadb%3a2%3arqnl%3a1%3ast%3a1785463601%3at%3a%d0%9a%d0%b0%d1%80%d0%b2%d0%b8%d0%bb%d1%8c%d1%88%d0%be%d0%bf%20-%20%d0%b8%d0%bd%d1%82%d0%b5%d1%80%d0%bd%d0%b5%d1%82-%d0%bc%d0%b0%d0%b3%d0%b0%d0%b7%d0%b8%d0%bd%20%d0%b0%d0%b2%d1%82%d0%be%d0%b7%d0%b0%d0%bf%d1%87%d0%b0%d1%81%d1%82%d0%b5%d0%b9%20%d0%b8%20%d0%b0%d0%b2%d1%82%d0%be%d0%b0%d0%ba%d1%81%d0%b5%d1%81%d1%81%d1%83%d0%b0%d1%80%d0%be%d0%b2&t=clt(1514)gdpr(14)clc(0-0-0)rqnt(1)rfs(1)ufs(1)aw(1)cdl(na)eco(42275364)fid(5200)ti(1)">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://mc.yandex.com/watch/28725196?wmode=7&page-url=https%3A%2F%2Fcarvilleshop.ru%2F&charset=utf-8&uah=chu%0A%22HeadlessChrome%22%3Bv%3D%22149%22%2C%22Chromium%22%3Bv%3D%22149%22%2C%22Not)A%3BBrand%22%3Bv%3D%2224%22%0Acha%0Ax86%0Achb%0A64%0Achf%0A149.0.7827.55%0Achl%0A%22HeadlessChrome%22%3Bv%3D%22149.0.7827.55%22%2C%22Chromium%22%3Bv%3D%22149.0.7827.55%22%2C%22Not)A%3BBrand%22%3Bv%3D%2224.0.0.0%22%0Achm%0A%3F0%0Achp%0ALinux&browser-info=pv%3A1%3Avf%3A2fcf9t0evwpka93vpr54j1ow8p4p23%3Afu%3A1%3Aen%3Autf-8%3Ala%3Aen-US%3Av%3A2600%3Acn%3A1%3Adp%3A0%3Als%3A1096966063119%3Ahid%3A87263998%3Az%3A0%3Ai%3A20260731020640%3Aet%3A1785463601%3Ac%3A1%3Arn%3A61869514%3Arqn%3A1%3Au%3A1785463601577597917%3Aw%3A1920x1080%3As%3A1920x1080x24%3Ask%3A1%3Afp%3A1784%3Awv%3A2%3Ads%3A0%2C0%2C747%2C290%2C147%2C146%2C1%2C2622%2C345%2C%2C%2C%2C4106%3Aco%3A0%3Ahdl%3A1%3Antf%3A1%3Ans%3A1785463595345%3Aadb%3A2%3Arqnl%3A1%3Ast%3A1785463601%3At%3A%D0%9A%D0%B0%D1%80%D0%B2%D0%B8%D0%BB%D1%8C%D1%88%D0%BE%D0%BF%20-%20%D0%B8%D0%BD%D1%82%D0%B5%D1%80%D0%BD%D0%B5%D1%82-%D0%BC%D0%B0%D0%B3%D0%B0%D0%B7%D0%B8%D0%BD%20%D0%B0%D0%B2%D1%82%D0%BE%D0%B7%D0%B0%D0%BF%D1%87%D0%B0%D1%81%D1%82%D0%B5%D0%B9%20%D0%B8%20%D0%B0%D0%B2%D1%82%D0%BE%D0%B0%D0%BA%D1%81%D0%B5%D1%81%D1%81%D1%83%D0%B0%D1%80%D0%BE%D0%B2&t=clt(1514)gdpr(14)clc(0-0-0)rqnt(1)rfs(1)ufs(1)aw(1)cdl(na)eco(42275364)fid(5200)ti(1)</div>
+                <div class="request-status status-success">
+                    302
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-46">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://cllctr.roistat.com/counter.js">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://cllctr.roistat.com/counter.js</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-47">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="fetch"
+             data-url="https://carvilleshop.ru/local/services/ajax/update_icons.php">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/local/services/ajax/update_icons.php</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-48">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="fetch"
+             data-url="https://mc.yandex.com/watch/28725196/1?wmode=7&page-url=https%3a%2f%2fcarvilleshop.ru%2f&charset=utf-8&uah=chu%0a%22headlesschrome%22%3bv%3d%22149%22%2c%22chromium%22%3bv%3d%22149%22%2c%22not%29a%3bbrand%22%3bv%3d%2224%22%0acha%0ax86%0achb%0a64%0achf%0a149.0.7827.55%0achl%0a%22headlesschrome%22%3bv%3d%22149.0.7827.55%22%2c%22chromium%22%3bv%3d%22149.0.7827.55%22%2c%22not%29a%3bbrand%22%3bv%3d%2224.0.0.0%22%0achm%0a%3f0%0achp%0alinux&browser-info=pv%3a1%3avf%3a2fcf9t0evwpka93vpr54j1ow8p4p23%3afu%3a1%3aen%3autf-8%3ala%3aen-us%3av%3a2600%3acn%3a1%3adp%3a0%3als%3a1096966063119%3ahid%3a87263998%3az%3a0%3ai%3a20260731020640%3aet%3a1785463601%3ac%3a1%3arn%3a61869514%3arqn%3a1%3au%3a1785463601577597917%3aw%3a1920x1080%3as%3a1920x1080x24%3ask%3a1%3afp%3a1784%3awv%3a2%3ads%3a0%2c0%2c747%2c290%2c147%2c146%2c1%2c2622%2c345%2c%2c%2c%2c4106%3aco%3a0%3ahdl%3a1%3antf%3a1%3ans%3a1785463595345%3aadb%3a2%3arqnl%3a1%3ast%3a1785463601%3at%3a%d0%9a%d0%b0%d1%80%d0%b2%d0%b8%d0%bb%d1%8c%d1%88%d0%be%d0%bf%20-%20%d0%b8%d0%bd%d1%82%d0%b5%d1%80%d0%bd%d0%b5%d1%82-%d0%bc%d0%b0%d0%b3%d0%b0%d0%b7%d0%b8%d0%bd%20%d0%b0%d0%b2%d1%82%d0%be%d0%b7%d0%b0%d0%bf%d1%87%d0%b0%d1%81%d1%82%d0%b5%d0%b9%20%d0%b8%20%d0%b0%d0%b2%d1%82%d0%be%d0%b0%d0%ba%d1%81%d0%b5%d1%81%d1%81%d1%83%d0%b0%d1%80%d0%be%d0%b2&t=clt%281514%29gdpr%2814%29clc%280-0-0%29rqnt%281%29rfs%281%29ufs%281%29aw%281%29cdl%28na%29eco%2842275364%29fid%285200%29ti%281%29&redirnss=1">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://mc.yandex.com/watch/28725196/1?wmode=7&page-url=https%3A%2F%2Fcarvilleshop.ru%2F&charset=utf-8&uah=chu%0A%22HeadlessChrome%22%3Bv%3D%22149%22%2C%22Chromium%22%3Bv%3D%22149%22%2C%22Not%29A%3BBrand%22%3Bv%3D%2224%22%0Acha%0Ax86%0Achb%0A64%0Achf%0A149.0.7827.55%0Achl%0A%22HeadlessChrome%22%3Bv%3D%22149.0.7827.55%22%2C%22Chromium%22%3Bv%3D%22149.0.7827.55%22%2C%22Not%29A%3BBrand%22%3Bv%3D%2224.0.0.0%22%0Achm%0A%3F0%0Achp%0ALinux&browser-info=pv%3A1%3Avf%3A2fcf9t0evwpka93vpr54j1ow8p4p23%3Afu%3A1%3Aen%3Autf-8%3Ala%3Aen-US%3Av%3A2600%3Acn%3A1%3Adp%3A0%3Als%3A1096966063119%3Ahid%3A87263998%3Az%3A0%3Ai%3A20260731020640%3Aet%3A1785463601%3Ac%3A1%3Arn%3A61869514%3Arqn%3A1%3Au%3A1785463601577597917%3Aw%3A1920x1080%3As%3A1920x1080x24%3Ask%3A1%3Afp%3A1784%3Awv%3A2%3Ads%3A0%2C0%2C747%2C290%2C147%2C146%2C1%2C2622%2C345%2C%2C%2C%2C4106%3Aco%3A0%3Ahdl%3A1%3Antf%3A1%3Ans%3A1785463595345%3Aadb%3A2%3Arqnl%3A1%3Ast%3A1785463601%3At%3A%D0%9A%D0%B0%D1%80%D0%B2%D0%B8%D0%BB%D1%8C%D1%88%D0%BE%D0%BF%20-%20%D0%B8%D0%BD%D1%82%D0%B5%D1%80%D0%BD%D0%B5%D1%82-%D0%BC%D0%B0%D0%B3%D0%B0%D0%B7%D0%B8%D0%BD%20%D0%B0%D0%B2%D1%82%D0%BE%D0%B7%D0%B0%D0%BF%D1%87%D0%B0%D1%81%D1%82%D0%B5%D0%B9%20%D0%B8%20%D0%B0%D0%B2%D1%82%D0%BE%D0%B0%D0%BA%D1%81%D0%B5%D1%81%D1%81%D1%83%D0%B0%D1%80%D0%BE%D0%B2&t=clt%281514%29gdpr%2814%29clc%280-0-0%29rqnt%281%29rfs%281%29ufs%281%29aw%281%29cdl%28na%29eco%2842275364%29fid%285200%29ti%281%29&redirnss=1</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-49">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="image"
+             data-url="https://top-fwz1.mail.ru/tracker?_=0.9278823082321691;id=3781043;u=https%3a%2f%2fcarvilleshop.ru%2f;r=https%3a%2f%2fcarvilleshop.ru%2f;title=%d0%9a%d0%b0%d1%80%d0%b2%d0%b8%d0%bb%d1%8c%d1%88%d0%be%d0%bf%20-%20%d0%b8%d0%bd%d1%82%d0%b5%d1%80%d0%bd%d0%b5%d1%82-%d0%bc%d0%b0%d0%b3%d0%b0%d0%b7%d0%b8%d0%bd%20%d0%b0%d0%b2%d1%82%d0%be%d0%b7%d0%b0%d0%bf%d1%87%d0%b0%d1%81%d1%82%d0%b5%d0%b9%20%d0%b8%20%d0%b0%d0%b2%d1%82%d0%be%d0%b0%d0%ba%d1%81%d0%b5%d1%81%d1%81%d1%83%d0%b0%d1%80%d0%be%d0%b2;s=1920*1080;vp=1920*1080;touch=0;hds=1;sid=893c9dab0173ee0c;ver=60.6.0;tz=0%2futc;st=1785463599153;ct=5309/5369/5369/5404/3771;gl=u;ni=10//4g/0/0/;lvid=1785463600665%3a1785463601707%3a2%3afc555c4507ff73bfbd38529218862baf;opts=jst-ym-vk%2cwda;visible=true;js=13;e=ce%3a%2f_click%3boutgoing%3bhttps%3a%2f%2fcarvilleshop.ru%2fcatalogue%2favtoaksessuary%2f">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://top-fwz1.mail.ru/tracker?_=0.9278823082321691;id=3781043;u=https%3A%2F%2Fcarvilleshop.ru%2F;r=https%3A%2F%2Fcarvilleshop.ru%2F;title=%D0%9A%D0%B0%D1%80%D0%B2%D0%B8%D0%BB%D1%8C%D1%88%D0%BE%D0%BF%20-%20%D0%B8%D0%BD%D1%82%D0%B5%D1%80%D0%BD%D0%B5%D1%82-%D0%BC%D0%B0%D0%B3%D0%B0%D0%B7%D0%B8%D0%BD%20%D0%B0%D0%B2%D1%82%D0%BE%D0%B7%D0%B0%D0%BF%D1%87%D0%B0%D1%81%D1%82%D0%B5%D0%B9%20%D0%B8%20%D0%B0%D0%B2%D1%82%D0%BE%D0%B0%D0%BA%D1%81%D0%B5%D1%81%D1%81%D1%83%D0%B0%D1%80%D0%BE%D0%B2;s=1920*1080;vp=1920*1080;touch=0;hds=1;sid=893c9dab0173ee0c;ver=60.6.0;tz=0%2FUTC;st=1785463599153;ct=5309/5369/5369/5404/3771;gl=u;ni=10//4g/0/0/;lvid=1785463600665%3A1785463601707%3A2%3Afc555c4507ff73bfbd38529218862baf;opts=jst-ym-vk%2Cwda;visible=true;js=13;e=CE%3A%2F_click%3Boutgoing%3Bhttps%3A%2F%2Fcarvilleshop.ru%2Fcatalogue%2Favtoaksessuary%2F</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-50">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="fetch"
+             data-url="https://mc.yandex.com/clmap/28725196?page-url=https%3a%2f%2fcarvilleshop.ru%2f&pointer-click=rn%3a217657979%3ax%3a27077%3ay%3a0%3at%3a10%3ap%3aa1a1%3bqraaa1aaaaaa2%7f%3ax%3a462%3ay%3a162&hidv2=4350647126671228967&browser-info=u%3a1785463601577597917%3av%3a2600%3avf%3a2fcf9t0evwpka93vpr54j1ow8p4p23%3arqnl%3a1%3ast%3a1785463602&t=gdpr(14)ti(1)">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://mc.yandex.com/clmap/28725196?page-url=https%3A%2F%2Fcarvilleshop.ru%2F&pointer-click=rn%3A217657979%3Ax%3A27077%3Ay%3A0%3At%3A10%3Ap%3AA1A1%3BQRAAA1AAAAAA2%7F%3AX%3A462%3AY%3A162&hidv2=4350647126671228967&browser-info=u%3A1785463601577597917%3Av%3A2600%3Avf%3A2fcf9t0evwpka93vpr54j1ow8p4p23%3Arqnl%3A1%3Ast%3A1785463602&t=gdpr(14)ti(1)</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-51">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="image"
+             data-url="https://mc.yandex.com/sync_cookie_image_check_secondary?scid=51398e22-c9a5-11a9-f73c-448ffdd66526&cid=28725196">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://mc.yandex.com/sync_cookie_image_check_secondary?scid=51398e22-c9a5-11a9-f73c-448ffdd66526&cid=28725196</div>
+                <div class="request-status status-success">
+                    302
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-52">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="image"
+             data-url="https://mc.yandex.ru/sync_cookie_image_start_secondary?cid=28725196&redirect_domain=mc.yandex.com&scid=51398e22-c9a5-11a9-f73c-448ffdd66526&token=11107.ma6cd_nb1vsy19a00vik-smctlsezbrxyejadsvuo4ydp_9z9mdtfkbug1vuoyof.htgeidqhimwq9hglqh_o5abtjxq%2c">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://mc.yandex.ru/sync_cookie_image_start_secondary?cid=28725196&redirect_domain=mc.yandex.com&scid=51398e22-c9a5-11a9-f73c-448ffdd66526&token=11107.MA6CD_NB1VSY19A00vik-sMcTlSEzBrxYEJadSVuo4ydP_9z9mDTfkbUg1vuOYoF.HTGEidQHiMwq9HglQH_o5aBtjxQ%2C</div>
+                <div class="request-status status-success">
+                    302
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-53">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="image"
+             data-url="https://mc.yandex.com/sync_cookie_image_decide_secondary?cid=28725196&scid=51398e22-c9a5-11a9-f73c-448ffdd66526&token=11107.kqyeveglcyctdheztrhcpvqags8tqbxhvzlyfmtlxypuedvzfwnzrnybta0pmblukz-6rv5pmjrx79gptg1joi0ugqwbkplxxi25bdb44tm%2c.amvns-zme0aqdagqhvavw7wvsya%2c">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://mc.yandex.com/sync_cookie_image_decide_secondary?cid=28725196&scid=51398e22-c9a5-11a9-f73c-448ffdd66526&token=11107.kqyEVEgLcycTDHEZtrhcpvQAGS8tQBxhvZlyfmtlxYpUEdVZFwnZrnyBtA0pmBluKz-6Rv5PMJRx79gptG1JOI0UgqWbKplXXI25bDB44tM%2C.aMVNS-zME0aqDAgQhVaVW7WVsYA%2C</div>
+                <div class="request-status status-success">
+                    302
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-54">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://cllctr.roistat.com/stream/view/-/y291bnrlcl9pzd05ythlzdu0njgyotvhntezytkxm2q3odk0zgziyjq5oszwywdlpwh0dhbzjtnbjtjgjtjgy2fydmlsbgvzag9wlnj1jtjgjmnvb2tpzt1fx2pzx3bfjtnentk0jtjdody0mdalmkmwjtjdmcuyqzalm0ilmjbfx2poyxnoxyuzrdk5osuzqiuymf9fanvhxyuzre1vemlsbgelmjuyrjuumcuyntiwjti1mjhymtelmjuzqiuyntiwtgludxglmjuymhg4nl82ncuynti5jti1mjbbchbszvdlyktpdcuyntjgntm3ljm2jti1mjalmjuyoetive1mjti1mkmlmjuymgxpa2ulmjuymedly2tvjti1mjklmjuymehlywrszxnzq2hyb21ljti1mkyxndkumc43odi3lju1jti1mjbtywzhcmklmjuyrjuzny4zniuzqiuymf9fagfzaf8lm0q0zdk0mtk1zmi4zdewzdy2otdimzdkyjc5yze5ogjlmcuzqiuymf9fbghhc2hfjtnen2u2ztaynda5mtdknmq5zwfjodnmzdq5y2e1nziwztqlm0ilmjbcsvrssvhfu01fr1vfu1rfsuqlm0qyndaxnzelm0ilmjbcsvrssvhfu01fr0fsqudfx1vtrvjfsuqlm0rlywu1nja0mtm0zjk1njuzmdnkmzizn2ezy2yyztzkmsuzqiuymf9jbgnrjtnemwvmyza3zcuyntvfmiuyntvfzzg3jti1nuuwjti1nuuyndazjtncjtiwx2nsc2slm0r4zzl4aiuyntvfmtc4ntq2mzu5odm1nyuyntvfmsuyntvfmsuyntvfai5jbgfyaxr5lm1zjti1mkzjb2xszwn0jtncjtiwcm9pc3rhdf92axnpdcuzrdeznta1ntmlm0ilmjbyb2lzdgf0x2zpcnn0x3zpc2l0jtnemtm1mdu1myuzqiuymhjvaxn0yxrfdmlzaxrfy29va2llx2v4cglyzsuzrdeymdk2mdalm0ilmjbyb2lzdgf0x2lzx25lzwrfbglzdgvux3jlcxvlc3rzjtnemcuzqiuymhjvaxn0yxrfaxnfc2f2zv9kyxrhx2lux2nvb2tpzsuzrdelm0ilmjbfew1fdwlkjtnemtc4ntq2mzywmtu3nzu5nzkxnyuzqiuymf95bv9kjtnemtc4ntq2mzywmsuzqiuymhrtcl9sdmlkjtnezmm1ntvjnduwn2zmnznizmjkmzg1mjkymtg4njjiywylm0ilmjb0bxjfbhzpzfrtjtnemtc4ntq2mzywmdy2nsuzqiuymf95bwfix3bhcmftjtneb3loadf4zehmegtvck43bwnouufnclg1qlfgwurmenbvthvpbwvhczk4tw1anuets2tqwxhuqvjar05wehjlbuvnrvlfrghtane5y2z2wkfwac1etg9nnm5eyyuzqiuymhjvaxn0yxrfywilm0qlm0ilmjbyb2lzdgf0x2fix3n1ym1pdcuzrcuzqiuymf95bv9pc2fkjtnemiuzqiuymejjvfjjwf9ttv9mqvnux1zju0lujtnemzeumdcumjayniuyntiwmdulmjuzqta2jti1m0e0msuzqiuymhjvaxn0yxrfy2fsbf90cmfja2luzyuzrdalm0ilmjbyb2lzdgf0x2nvb2tpzxnfdg9fcmvzyxzljtnecm9pc3rhdf9hyiuyntjdcm9pc3rhdf9hyl9zdwjtaxqlmjuyq3jvaxn0yxrfdmlzaxqlmjuyq3jvaxn0yxrfy2fsbf90cmfja2luzyzob3n0pwnhcnzpbgxlc2hvcc5ydsz2axnpdf9pzd0xmzuwntuzjnbob25lpszyzwzlcnjlcj1odhrwcyuzqsuyriuyrmnhcnzpbgxlc2hvcc5ydsuyrg==?counter_id=9a8ed5468295a513a913d7894dfbb499">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://cllctr.roistat.com/stream/view/-/Y291bnRlcl9pZD05YThlZDU0NjgyOTVhNTEzYTkxM2Q3ODk0ZGZiYjQ5OSZwYWdlPWh0dHBzJTNBJTJGJTJGY2FydmlsbGVzaG9wLnJ1JTJGJmNvb2tpZT1fX2pzX3BfJTNENTk0JTJDODY0MDAlMkMwJTJDMCUyQzAlM0IlMjBfX2poYXNoXyUzRDk5OSUzQiUyMF9fanVhXyUzRE1vemlsbGElMjUyRjUuMCUyNTIwJTI1MjhYMTElMjUzQiUyNTIwTGludXglMjUyMHg4Nl82NCUyNTI5JTI1MjBBcHBsZVdlYktpdCUyNTJGNTM3LjM2JTI1MjAlMjUyOEtIVE1MJTI1MkMlMjUyMGxpa2UlMjUyMEdlY2tvJTI1MjklMjUyMEhlYWRsZXNzQ2hyb21lJTI1MkYxNDkuMC43ODI3LjU1JTI1MjBTYWZhcmklMjUyRjUzNy4zNiUzQiUyMF9faGFzaF8lM0Q0ZDk0MTk1ZmI4ZDEwZDY2OTdiMzdkYjc5YzE5OGJlMCUzQiUyMF9fbGhhc2hfJTNEN2U2ZTAyNDA5MTdkNmQ5ZWFjODNmZDQ5Y2E1NzIwZTQlM0IlMjBCSVRSSVhfU01fR1VFU1RfSUQlM0QyNDAxNzElM0IlMjBCSVRSSVhfU01fR0FSQUdFX1VTRVJfSUQlM0RlYWU1NjA0MTM0Zjk1NjUzMDNkMzIzN2EzY2YyZTZkMSUzQiUyMF9jbGNrJTNEMWVmYzA3ZCUyNTVFMiUyNTVFZzg3JTI1NUUwJTI1NUUyNDAzJTNCJTIwX2Nsc2slM0R4Zzl4aiUyNTVFMTc4NTQ2MzU5ODM1NyUyNTVFMSUyNTVFMSUyNTVFai5jbGFyaXR5Lm1zJTI1MkZjb2xsZWN0JTNCJTIwcm9pc3RhdF92aXNpdCUzRDEzNTA1NTMlM0IlMjByb2lzdGF0X2ZpcnN0X3Zpc2l0JTNEMTM1MDU1MyUzQiUyMHJvaXN0YXRfdmlzaXRfY29va2llX2V4cGlyZSUzRDEyMDk2MDAlM0IlMjByb2lzdGF0X2lzX25lZWRfbGlzdGVuX3JlcXVlc3RzJTNEMCUzQiUyMHJvaXN0YXRfaXNfc2F2ZV9kYXRhX2luX2Nvb2tpZSUzRDElM0IlMjBfeW1fdWlkJTNEMTc4NTQ2MzYwMTU3NzU5NzkxNyUzQiUyMF95bV9kJTNEMTc4NTQ2MzYwMSUzQiUyMHRtcl9sdmlkJTNEZmM1NTVjNDUwN2ZmNzNiZmJkMzg1MjkyMTg4NjJiYWYlM0IlMjB0bXJfbHZpZFRTJTNEMTc4NTQ2MzYwMDY2NSUzQiUyMF95bWFiX3BhcmFtJTNEb3loaDF4ZEhMeGtVck43bWNOUUFNclg1QlFGWURMenBVTHVPbWVHczk4TW1aNUEtS2tqWXhuQVJaR05WeHJlbUVnRVlFRGhTanE5Y2Z2WkFwaC1ETG9nNm5EYyUzQiUyMHJvaXN0YXRfYWIlM0QlM0IlMjByb2lzdGF0X2FiX3N1Ym1pdCUzRCUzQiUyMF95bV9pc2FkJTNEMiUzQiUyMEJJVFJJWF9TTV9MQVNUX1ZJU0lUJTNEMzEuMDcuMjAyNiUyNTIwMDUlMjUzQTA2JTI1M0E0MSUzQiUyMHJvaXN0YXRfY2FsbF90cmFja2luZyUzRDAlM0IlMjByb2lzdGF0X2Nvb2tpZXNfdG9fcmVzYXZlJTNEcm9pc3RhdF9hYiUyNTJDcm9pc3RhdF9hYl9zdWJtaXQlMjUyQ3JvaXN0YXRfdmlzaXQlMjUyQ3JvaXN0YXRfY2FsbF90cmFja2luZyZob3N0PWNhcnZpbGxlc2hvcC5ydSZ2aXNpdF9pZD0xMzUwNTUzJnBob25lPSZyZWZlcnJlcj1odHRwcyUzQSUyRiUyRmNhcnZpbGxlc2hvcC5ydSUyRg==?counter_id=9a8ed5468295a513a913d7894dfbb499</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-55">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="image"
+             data-url="https://mc.yandex.ru/sync_cookie_image_finish_secondary?cid=28725196&redirect_domain=mc.yandex.com&scid=51398e22-c9a5-11a9-f73c-448ffdd66526&token=11107.fa8eelzp7ojktpqsvacrgnkf4oifgsfird8_o4ce_leaoy9yihk1fm7rwgqz7srdnzcqf3hdibseiraaobb1urnyulv1uwbqhinhnfmuk1exqs9lxto91kiiuolj4xgwi-4c8mmwrjy0fnqoc7e8gzoxmk5wtqjogo4pnruy5jj68wjw_pbl7zbfrowpw4_5aeq0syjb-c6bd6cdjjzkea%2c%2c.oq2yazebqnepdsjmkzj1q_fvtxu%2c">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://mc.yandex.ru/sync_cookie_image_finish_secondary?cid=28725196&redirect_domain=mc.yandex.com&scid=51398e22-c9a5-11a9-f73c-448ffdd66526&token=11107.Fa8EelzP7ojkTPQsVaCRgnKF4OIfGsfiRD8_o4ce_LeAoy9YihK1Fm7RwGqZ7SrDnZCqF3HdIbSEIrAAobb1urnYUlv1UwBQHiNhNFMuK1Exqs9lXtO91kiiUolj4XgWi-4c8MmwrJy0FnqOC7E8GZoXmk5WTQJogO4PnRUy5jj68wjw_PbL7zbfRowPw4_5AEq0SyJb-C6bd6CdjJZKEA%2C%2C.oQ2yaZeBqnEPDSjmkZj1q_fvtxU%2C</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-56">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://privacy-cs.mail.ru/static/sync-loader.js">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://privacy-cs.mail.ru/static/sync-loader.js</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-57">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="post"
+             data-status="success"
+             data-type="ping"
+             data-url="https://mc.yandex.com/watch/28725196?page-url=https%3a%2f%2fcarvilleshop.ru%2f&exp=p54lns9lclo%2c&charset=utf-8&uah=chu%0a%22headlesschrome%22%3bv%3d%22149%22%2c%22chromium%22%3bv%3d%22149%22%2c%22not)a%3bbrand%22%3bv%3d%2224%22%0acha%0ax86%0achb%0a64%0achf%0a149.0.7827.55%0achl%0a%22headlesschrome%22%3bv%3d%22149.0.7827.55%22%2c%22chromium%22%3bv%3d%22149.0.7827.55%22%2c%22not)a%3bbrand%22%3bv%3d%2224.0.0.0%22%0achm%0a%3f0%0achp%0alinux&hidv2=4350647126671228967&hittoken=1785463601_0ae2611b1a2b41174dd14ccff452866d9f68e7d3420f2fc02d944630bc64226c&browser-info=ex%3a1%3aar%3a1%3avf%3a2fcf9t0evwpka93vpr54j1ow8p4p23%3afu%3a1%3aen%3autf-8%3ala%3aen-us%3av%3a2600%3acn%3a1%3adp%3a1%3als%3a1096966063119%3ahid%3a87263998%3az%3a0%3ai%3a20260731020641%3aet%3a1785463602%3ac%3a1%3arn%3a948515429%3arqn%3a2%3au%3a1785463601577597917%3aw%3a1920x1080%3as%3a1920x1080x24%3ask%3a1%3awv%3a2%3ads%3a%2c%2c%2c%2c%2c%2c%2c%2c%2c6363%2c%2c%2c%3aco%3a0%3ahdl%3a1%3antf%3a1%3ans%3a1785463595345%3aadb%3a2%3arqnl%3a1%3ast%3a1785463603%3at%3a%d0%9a%d0%b0%d1%80%d0%b2%d0%b8%d0%bb%d1%8c%d1%88%d0%be%d0%bf%20-%20%d0%b8%d0%bd%d1%82%d0%b5%d1%80%d0%bd%d0%b5%d1%82-%d0%bc%d0%b0%d0%b3%d0%b0%d0%b7%d0%b8%d0%bd%20%d0%b0%d0%b2%d1%82%d0%be%d0%b7%d0%b0%d0%bf%d1%87%d0%b0%d1%81%d1%82%d0%b5%d0%b9%20%d0%b8%20%d0%b0%d0%b2%d1%82%d0%be%d0%b0%d0%ba%d1%81%d0%b5%d1%81%d1%81%d1%83%d0%b0%d1%80%d0%be%d0%b2&t=gdpr(14)mc(ex-2)clc(1-462-162)rqnt(2)rfs(1)ufs(1)aw(1)ecs(0)cdl(na)eco(42275364)ti(0)&force-urlencoded=1">
+            <div class="request-summary">
+                <div class="request-method method-post">POST</div>
+                <div class="request-url">https://mc.yandex.com/watch/28725196?page-url=https%3A%2F%2Fcarvilleshop.ru%2F&exp=P54lnS9LcLo%2C&charset=utf-8&uah=chu%0A%22HeadlessChrome%22%3Bv%3D%22149%22%2C%22Chromium%22%3Bv%3D%22149%22%2C%22Not)A%3BBrand%22%3Bv%3D%2224%22%0Acha%0Ax86%0Achb%0A64%0Achf%0A149.0.7827.55%0Achl%0A%22HeadlessChrome%22%3Bv%3D%22149.0.7827.55%22%2C%22Chromium%22%3Bv%3D%22149.0.7827.55%22%2C%22Not)A%3BBrand%22%3Bv%3D%2224.0.0.0%22%0Achm%0A%3F0%0Achp%0ALinux&hidv2=4350647126671228967&hittoken=1785463601_0ae2611b1a2b41174dd14ccff452866d9f68e7d3420f2fc02d944630bc64226c&browser-info=ex%3A1%3Aar%3A1%3Avf%3A2fcf9t0evwpka93vpr54j1ow8p4p23%3Afu%3A1%3Aen%3Autf-8%3Ala%3Aen-US%3Av%3A2600%3Acn%3A1%3Adp%3A1%3Als%3A1096966063119%3Ahid%3A87263998%3Az%3A0%3Ai%3A20260731020641%3Aet%3A1785463602%3Ac%3A1%3Arn%3A948515429%3Arqn%3A2%3Au%3A1785463601577597917%3Aw%3A1920x1080%3As%3A1920x1080x24%3Ask%3A1%3Awv%3A2%3Ads%3A%2C%2C%2C%2C%2C%2C%2C%2C%2C6363%2C%2C%2C%3Aco%3A0%3Ahdl%3A1%3Antf%3A1%3Ans%3A1785463595345%3Aadb%3A2%3Arqnl%3A1%3Ast%3A1785463603%3At%3A%D0%9A%D0%B0%D1%80%D0%B2%D0%B8%D0%BB%D1%8C%D1%88%D0%BE%D0%BF%20-%20%D0%B8%D0%BD%D1%82%D0%B5%D1%80%D0%BD%D0%B5%D1%82-%D0%BC%D0%B0%D0%B3%D0%B0%D0%B7%D0%B8%D0%BD%20%D0%B0%D0%B2%D1%82%D0%BE%D0%B7%D0%B0%D0%BF%D1%87%D0%B0%D1%81%D1%82%D0%B5%D0%B9%20%D0%B8%20%D0%B0%D0%B2%D1%82%D0%BE%D0%B0%D0%BA%D1%81%D0%B5%D1%81%D1%81%D1%83%D0%B0%D1%80%D0%BE%D0%B2&t=gdpr(14)mc(ex-2)clc(1-462-162)rqnt(2)rfs(1)ufs(1)aw(1)ecs(0)cdl(na)eco(42275364)ti(0)&force-urlencoded=1</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-58">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="post"
+             data-status="success"
+             data-type="ping"
+             data-url="https://mc.yandex.com/watch/28725196?page-url=https%3a%2f%2fcarvilleshop.ru%2f&exp=p54lns9lclo%2c&charset=utf-8&uah=chu%0a%22headlesschrome%22%3bv%3d%22149%22%2c%22chromium%22%3bv%3d%22149%22%2c%22not)a%3bbrand%22%3bv%3d%2224%22%0acha%0ax86%0achb%0a64%0achf%0a149.0.7827.55%0achl%0a%22headlesschrome%22%3bv%3d%22149.0.7827.55%22%2c%22chromium%22%3bv%3d%22149.0.7827.55%22%2c%22not)a%3bbrand%22%3bv%3d%2224.0.0.0%22%0achm%0a%3f0%0achp%0alinux&hidv2=4350647126671228967&hittoken=1785463601_0ae2611b1a2b41174dd14ccff452866d9f68e7d3420f2fc02d944630bc64226c&browser-info=ex%3a1%3aar%3a1%3avf%3a2fcf9t0evwpka93vpr54j1ow8p4p23%3afu%3a1%3aen%3autf-8%3ala%3aen-us%3av%3a2600%3acn%3a1%3adp%3a1%3als%3a1096966063119%3ahid%3a87263998%3az%3a0%3ai%3a20260731020641%3aet%3a1785463602%3ac%3a1%3arn%3a999601702%3arqn%3a3%3au%3a1785463601577597917%3aw%3a1920x1080%3as%3a1920x1080x24%3ask%3a1%3awv%3a2%3aco%3a0%3ahdl%3a1%3antf%3a1%3ans%3a1785463595345%3aadb%3a2%3arqnl%3a1%3ast%3a1785463603%3at%3a%d0%9a%d0%b0%d1%80%d0%b2%d0%b8%d0%bb%d1%8c%d1%88%d0%be%d0%bf%20-%20%d0%b8%d0%bd%d1%82%d0%b5%d1%80%d0%bd%d0%b5%d1%82-%d0%bc%d0%b0%d0%b3%d0%b0%d0%b7%d0%b8%d0%bd%20%d0%b0%d0%b2%d1%82%d0%be%d0%b7%d0%b0%d0%bf%d1%87%d0%b0%d1%81%d1%82%d0%b5%d0%b9%20%d0%b8%20%d0%b0%d0%b2%d1%82%d0%be%d0%b0%d0%ba%d1%81%d0%b5%d1%81%d1%81%d1%83%d0%b0%d1%80%d0%be%d0%b2&t=gdpr(14)mc(ex-2)clc(1-462-162)rqnt(3)rfs(1)ufs(1)aw(1)ecs(0)cdl(na)eco(42275364)ti(0)&force-urlencoded=1">
+            <div class="request-summary">
+                <div class="request-method method-post">POST</div>
+                <div class="request-url">https://mc.yandex.com/watch/28725196?page-url=https%3A%2F%2Fcarvilleshop.ru%2F&exp=P54lnS9LcLo%2C&charset=utf-8&uah=chu%0A%22HeadlessChrome%22%3Bv%3D%22149%22%2C%22Chromium%22%3Bv%3D%22149%22%2C%22Not)A%3BBrand%22%3Bv%3D%2224%22%0Acha%0Ax86%0Achb%0A64%0Achf%0A149.0.7827.55%0Achl%0A%22HeadlessChrome%22%3Bv%3D%22149.0.7827.55%22%2C%22Chromium%22%3Bv%3D%22149.0.7827.55%22%2C%22Not)A%3BBrand%22%3Bv%3D%2224.0.0.0%22%0Achm%0A%3F0%0Achp%0ALinux&hidv2=4350647126671228967&hittoken=1785463601_0ae2611b1a2b41174dd14ccff452866d9f68e7d3420f2fc02d944630bc64226c&browser-info=ex%3A1%3Aar%3A1%3Avf%3A2fcf9t0evwpka93vpr54j1ow8p4p23%3Afu%3A1%3Aen%3Autf-8%3Ala%3Aen-US%3Av%3A2600%3Acn%3A1%3Adp%3A1%3Als%3A1096966063119%3Ahid%3A87263998%3Az%3A0%3Ai%3A20260731020641%3Aet%3A1785463602%3Ac%3A1%3Arn%3A999601702%3Arqn%3A3%3Au%3A1785463601577597917%3Aw%3A1920x1080%3As%3A1920x1080x24%3Ask%3A1%3Awv%3A2%3Aco%3A0%3Ahdl%3A1%3Antf%3A1%3Ans%3A1785463595345%3Aadb%3A2%3Arqnl%3A1%3Ast%3A1785463603%3At%3A%D0%9A%D0%B0%D1%80%D0%B2%D0%B8%D0%BB%D1%8C%D1%88%D0%BE%D0%BF%20-%20%D0%B8%D0%BD%D1%82%D0%B5%D1%80%D0%BD%D0%B5%D1%82-%D0%BC%D0%B0%D0%B3%D0%B0%D0%B7%D0%B8%D0%BD%20%D0%B0%D0%B2%D1%82%D0%BE%D0%B7%D0%B0%D0%BF%D1%87%D0%B0%D1%81%D1%82%D0%B5%D0%B9%20%D0%B8%20%D0%B0%D0%B2%D1%82%D0%BE%D0%B0%D0%BA%D1%81%D0%B5%D1%81%D1%81%D1%83%D0%B0%D1%80%D0%BE%D0%B2&t=gdpr(14)mc(ex-2)clc(1-462-162)rqnt(3)rfs(1)ufs(1)aw(1)ecs(0)cdl(na)eco(42275364)ti(0)&force-urlencoded=1</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-59">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://mc.yandex.com/metrika-tags/_/tag_ec_test.js">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://mc.yandex.com/metrika-tags/_/tag_ec_test.js</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-60">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="post"
+             data-status="success"
+             data-type="xhr"
+             data-url="https://j.clarity.ms/collect">
+            <div class="request-summary">
+                <div class="request-method method-post">POST</div>
+                <div class="request-url">https://j.clarity.ms/collect</div>
+                <div class="request-status status-success">
+                    204
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-61">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://mc.yandex.com/metrika-tags/_/tag_ec.js">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://mc.yandex.com/metrika-tags/_/tag_ec.js</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-62">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="post"
+             data-status="success"
+             data-type="fetch"
+             data-url="https://privacy-cs.mail.ru/fp/?id=wooitf9dfgshgxuxagv19">
+            <div class="request-summary">
+                <div class="request-method method-post">POST</div>
+                <div class="request-url">https://privacy-cs.mail.ru/fp/?id=wOoItf9dfgShGXUXaGv19</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-63">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="document"
+             data-url="https://carvilleshop.ru/catalogue/avtoaksessuary/">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/catalogue/avtoaksessuary/</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-64">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="stylesheet"
+             data-url="https://carvilleshop.ru/local/templates/shop/assets/nouislider.css?v=">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/local/templates/shop/assets/nouislider.css?v=</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-65">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="stylesheet"
+             data-url="https://carvilleshop.ru/bitrix/js/ui/design-tokens/dist/ui.design-tokens.css?175437978626358">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/bitrix/js/ui/design-tokens/dist/ui.design-tokens.css?175437978626358</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-66">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="stylesheet"
+             data-url="https://carvilleshop.ru/bitrix/js/ui/fonts/opensans/ui.font.opensans.css?17543797862555">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/bitrix/js/ui/fonts/opensans/ui.font.opensans.css?17543797862555</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-67">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="stylesheet"
+             data-url="https://carvilleshop.ru/bitrix/js/main/popup/dist/main.popup.bundle.css?175440006831694">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/bitrix/js/main/popup/dist/main.popup.bundle.css?175440006831694</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-68">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="stylesheet"
+             data-url="https://carvilleshop.ru/bitrix/cache/css/s2/shop/template_06232a1f8c4f806b4f679691cff0d6aa/template_06232a1f8c4f806b4f679691cff0d6aa_v1.css?1784184798637830">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/bitrix/cache/css/s2/shop/template_06232a1f8c4f806b4f679691cff0d6aa/template_06232a1f8c4f806b4f679691cff0d6aa_v1.css?1784184798637830</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-69">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="stylesheet"
+             data-url="https://carvilleshop.ru/bitrix/cache/css/s2/shop/page_fabda749d77131b0dc1f7deaebc296af/page_fabda749d77131b0dc1f7deaebc296af_v1.css?178282000623881">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/bitrix/cache/css/s2/shop/page_fabda749d77131b0dc1f7deaebc296af/page_fabda749d77131b0dc1f7deaebc296af_v1.css?178282000623881</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-70">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://carvilleshop.ru/local/templates/shop/assets/bundles/main-bundle.js?v=1783329783">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://carvilleshop.ru/local/templates/shop/assets/bundles/main-bundle.js?v=1783329783</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-71">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <div class="request-item" 
+             data-method="get"
+             data-status="success"
+             data-type="script"
+             data-url="https://www.clarity.ms/tag/xqb548dkqh">
+            <div class="request-summary">
+                <div class="request-method method-get">GET</div>
+                <div class="request-url">https://www.clarity.ms/tag/xqb548dkqh</div>
+                <div class="request-status status-success">
+                    200
+                </div>
+            </div>
+            
+            <div class="request-details" id="details-72">
+
+                
+                
+                
+                
+                
+                
+                
+            </div>
+        </div>
+    
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const filterButtons = document.querySelectorAll('.filter-button');
+        const requestItems = document.querySelectorAll('.request-item');
+        
+        let activeFilters = {
+            type: 'all',
+            status: 'all',
+            search: '',
+            category: 'all'
+        };
+        
+        function applyFilters() {
+            requestItems.forEach(item => {
+                const method = item.getAttribute('data-method');
+                const status = item.getAttribute('data-status');
+                const type = item.getAttribute('data-type');
+                const url = item.getAttribute('data-url');
+                
+                let typeMatch = true;
+                let statusMatch = true;
+                let searchMatch = true;
+                let categoryMatch = true;
+                
+                if (activeFilters.type !== 'all' && activeFilters.type !== 'type-all') {
+                    const filterType = activeFilters.type.replace('type-', '');
+                    typeMatch = type === filterType;
+                }
+                
+                if (activeFilters.status !== 'all' && activeFilters.status !== 'status-all') {
+                    const filterStatus = activeFilters.status.replace('status-', '');
+                    statusMatch = status === filterStatus;
+                }
+                
+                if (activeFilters.category !== 'all') {
+                    categoryMatch = status === activeFilters.category;
+                }
+                
+                if (activeFilters.search) {
+                    const searchLower = activeFilters.search.toLowerCase();
+                    searchMatch = 
+                        url.toLowerCase().includes(searchLower) ||
+                        method.toLowerCase().includes(searchLower) ||
+                        item.textContent.toLowerCase().includes(searchLower);
+                }
+                
+                item.style.display = (typeMatch && statusMatch && searchMatch && categoryMatch) ? 'block' : 'none';
+            });
+            
+            updateButtonStates();
+        }
+        
+        function updateButtonStates() {
+            filterButtons.forEach(button => {
+                const filterType = button.getAttribute('data-filter');
+                button.classList.remove('active');
+                
+                if (filterType.startsWith('type-') && filterType === activeFilters.type) {
+                    button.classList.add('active');
+                } else if (filterType.startsWith('status-') && filterType === activeFilters.status) {
+                    button.classList.add('active');
+                } else if (!filterType.startsWith('type-') && !filterType.startsWith('status-') && filterType === activeFilters.category) {
+                    button.classList.add('active');
+                }
+            });
+        }
+        
+        searchInput.addEventListener('input', function() {
+            activeFilters.search = this.value.toLowerCase();
+            applyFilters();
+        });
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const filterType = this.getAttribute('data-filter');
+                
+                if (filterType.startsWith('type-')) {
+                    activeFilters.type = filterType;
+                } else if (filterType.startsWith('status-')) {
+                    activeFilters.status = filterType;
+                } else {
+                    activeFilters.category = filterType;
+                }
+                
+                applyFilters();
+            });
+        });
+        
+        requestItems.forEach((item, index) => {
+            item.addEventListener('click', function(e) {
+                
+                if (e.target.classList.contains('filter-button')) {
+                    return;
+                }
+                
+                const details = this.querySelector('.request-details');
+                const isExpanded = details.classList.contains('expanded');
+                
+            
+                document.querySelectorAll('.request-details.expanded').forEach(detail => {
+                    detail.classList.remove('expanded');
+                });
+                document.querySelectorAll('.request-item.expanded').forEach(reqItem => {
+                    reqItem.classList.remove('expanded');
+                });
+                
+                if (!isExpanded) {
+                    details.classList.add('expanded');
+                    this.classList.add('expanded');
+                }
+            });
+        });
+        
+        applyFilters();
+    });
+</script>
+</body>
+</html>
